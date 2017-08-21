@@ -114,7 +114,7 @@ CREATE OR REPLACE TYPE BODY LOGGER AS
   MEMBER FUNCTION isEnabled(lvl IN VARCHAR2, marker VARCHAR2) RETURN BOOLEAN
   IS
   BEGIN
-    RETURN LogManager.isenabled(lvl,marker);
+    RETURN LogManager.isenabled(lvl/*,marker*/);
   END;
 
   MEMBER FUNCTION isTraceEnabled RETURN BOOLEAN

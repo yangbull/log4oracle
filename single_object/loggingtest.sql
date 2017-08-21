@@ -7,7 +7,7 @@ DECLARE
   PROCEDURE Innertest IS
   BEGIN
     L_Log.Debug('inner hello');
-  
+
     FOR I IN 1 .. Utl_Call_Stack.Dynamic_Depth LOOP
       Dbms_Output.Put_Line(I);
       Dbms_Output.Put_Line('owner:' || Utl_Call_Stack.owner(I));

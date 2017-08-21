@@ -488,77 +488,77 @@ CREATE OR REPLACE PACKAGE BODY LOGMANAGER AS
          $END
 
 
-    FUNCTION isEnabled(lvl VARCHAR2, mkr VARCHAR2) RETURN BOOLEAN
-    IS
-    BEGIN
-        RETURN (CASE lvl
-            WHEN 'TRACE' THEN logmanager.ll_trace_enabled
-            WHEN 'DEBUG' THEN logmanager.ll_debug_enabled
-            WHEN 'INFO' THEN logmanager.ll_info_enabled
-            WHEN 'WARN' THEN logmanager.ll_warn_enabled
-            WHEN 'ERROR' THEN logmanager.ll_error_enabled
-            WHEN 'FATAL' THEN logmanager.ll_fatal_enabled
-            ELSE FALSE
-            END );
-    END;
+  FUNCTION isEnabled(lvl VARCHAR2, mkr VARCHAR2) RETURN BOOLEAN
+  IS
+  BEGIN
+	RETURN (CASE lvl
+		WHEN 'TRACE' THEN logmanager.ll_trace_enabled
+		WHEN 'DEBUG' THEN logmanager.ll_debug_enabled
+		WHEN 'INFO' THEN logmanager.ll_info_enabled
+		WHEN 'WARN' THEN logmanager.ll_warn_enabled
+		WHEN 'ERROR' THEN logmanager.ll_error_enabled
+		WHEN 'FATAL' THEN logmanager.ll_fatal_enabled
+		ELSE FALSE
+		END );
+  END;
 
-PROCEDURE LOG(lvl VARCHAR2, marker VARCHAR2, msg VARCHAR2) IS
-   owner        VARCHAR2(30);
-   NAME      VARCHAR2(30);
-   lineno    NUMBER;
-   caller_type      VARCHAR2(30);
-    BEGIN
-$IF dbms_db_version.ver_le_11 $THEN
-        WHO_CALLED_ME( OWNER, NAME, LINENO, CALLER_TYPE, 2);
-         $ELSE
-    --3 represent. 1 = this (logmanager.log), 2 = caller (ie logger.xxx), 3 = who called logger.xxx
-    NAME := Utl_Call_Stack.Concatenate_Subprogram(Utl_Call_Stack.Subprogram(3));
-    Lineno := Utl_Call_Stack.Unit_Line(3);
-$END
-      --DBMS_OUTPUT.PUT_LINE(name||'('||lineno||') '||TO_CHAR(systimestamp,'YYYY-MM-DD"T"HH:MI:SSXFF6')||' '||RPAD(lvl,5)||rtrim(' '||marker)||' '||msg);
-      DBMS_OUTPUT.PUT_LINE(TO_CHAR(SYSTIMESTAMP,'YYYY-MM-DD"T"HH:MI:SSXFF6')||' '||RPAD(lvl,5)||' '||REPLACE(NAME,' ')||'('||lineno||')'||RTRIM(' '||marker)||' - '||msg);
-    END;
+  PROCEDURE LOG(lvl VARCHAR2, marker VARCHAR2, msg VARCHAR2) IS
+	 owner       VARCHAR2(30);
+	 NAME        VARCHAR2(30);
+	 lineno      NUMBER;
+	 caller_type VARCHAR2(30);
+  BEGIN
+	$IF dbms_db_version.ver_le_11 $THEN
+			WHO_CALLED_ME( OWNER, NAME, LINENO, CALLER_TYPE, 2);
+			 $ELSE
+		--3 represent. 1 = this (logmanager.log), 2 = caller (ie logger.xxx), 3 = who called logger.xxx
+		NAME := Utl_Call_Stack.Concatenate_Subprogram(Utl_Call_Stack.Subprogram(3));
+		Lineno := Utl_Call_Stack.Unit_Line(3);
+	$END
+		--DBMS_OUTPUT.PUT_LINE(name||'('||lineno||') '||TO_CHAR(systimestamp,'YYYY-MM-DD"T"HH:MI:SSXFF6')||' '||RPAD(lvl,5)||rtrim(' '||marker)||' '||msg);
+	DBMS_OUTPUT.PUT_LINE(TO_CHAR(SYSTIMESTAMP,'YYYY-MM-DD"T"HH:MI:SSXFF6')||' '||RPAD(lvl,5)||' '||REPLACE(NAME,' ')||'('||lineno||')'||RTRIM(' '||marker)||' - '||msg);
+  END;
 
     --essentially who called me at depth
-    FUNCTION getClassName(DEPTH NUMBER) RETURN VARCHAR2
-    IS
-   owner        VARCHAR2(30);
-   NAME      VARCHAR2(30);
-   lineno    NUMBER;
-   caller_type      VARCHAR2(30);
-    BEGIN
+  FUNCTION getClassName(DEPTH NUMBER) RETURN VARCHAR2
+  IS
+    owner        VARCHAR2(30);
+    NAME      VARCHAR2(30);
+    lineno    NUMBER;
+    caller_type      VARCHAR2(30);
+  BEGIN
         --k_logger.entry('getClassName');
         --dbms_output.put_line($$PLSQL_UNIT ||':'||loc.lineno);
         --dbms_output.put_line($$PLSQL_UNIT ||':'||loc.toString());
         --return k_logger.exit('getClassName',loc.getfqcn);
-$IF dbms_db_version.ver_le_11 $THEN
-        LogManager.who_called_me( owner, NAME, lineno, caller_type ,DEPTH );
-        RETURN owner||'.'||NAME;
-$ELSE
-        RETURN utl_call_stack.concatenate_subprogram(utl_call_stack.subprogram(1+DEPTH)); --owner||'.'||name;
-$END
-    END;
+	$IF dbms_db_version.ver_le_11 $THEN
+	   LogManager.who_called_me( owner, NAME, lineno, caller_type ,DEPTH );
+	   RETURN owner||'.'||NAME;
+	$ELSE
+	   RETURN utl_call_stack.concatenate_subprogram(utl_call_stack.subprogram(1+DEPTH)); --owner||'.'||name;
+	$END
+  END;
 
 
-    FUNCTION GetLogger(NAME VARCHAR2) RETURN LOGGER IS
-    BEGIN
-        --k_logger.entry('GetLogger');
-        --needs to come from logger context
-        --K_LOGGER.debug('create simple logger');
-        RETURN LOGGER(NAME);
+  FUNCTION GetLogger(NAME VARCHAR2) RETURN LOGGER IS
+  BEGIN
+    --k_logger.entry('GetLogger');
+    --needs to come from logger context
+    --K_LOGGER.debug('create simple logger');
+    RETURN LOGGER(NAME);
 
-        --return TREAT( k_logger.exit('GetLogger',m_log) as Logger);
-    END;
+    --return TREAT( k_logger.exit('GetLogger',m_log) as Logger);
+  END;
 
-    FUNCTION GetLogger RETURN LOGGER IS
-    BEGIN
-        RETURN getLogger(getClassName(2));
-    END;
+  FUNCTION GetLogger RETURN LOGGER IS
+  BEGIN
+    RETURN getLogger(getClassName(2));
+  END;
 
-    FUNCTION GetRootLogger RETURN LOGGER IS
-    BEGIN
-        RETURN getLogger(ROOT_LOGGER_NAME);
-    END;
+  FUNCTION GetRootLogger RETURN LOGGER IS
+  BEGIN
+    RETURN getLogger(ROOT_LOGGER_NAME);
+  END;
 
 END;
 /
